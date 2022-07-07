@@ -57,3 +57,12 @@ py_binary(
         "@com_google_riegeli//python/riegeli",
     ],
 )
+
+py_binary(
+    name = "load_solutions",
+    srcs = ["load_solutions.py"],
+    deps = [
+        ":contest_problem_py_pb2",
+        "@com_google_riegeli//python/riegeli",
+    ],
+)
