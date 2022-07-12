@@ -23,6 +23,7 @@ import sys
 import random
 
 import riegeli
+import json
 
 import contest_problem_pb2
 
@@ -38,8 +39,7 @@ def escape(s: str):
     return s.replace('\\', '\\backslash').replace('\n', '\\n')
 
 def _print_names_and_sources(filenames):
-  solution_pairs = []
-  """Prints the names and sources of all ContestProblems in filenames."""
+  problems = []
   for problem in _all_problems(filenames):
     correct_solutions = []
     incorrect_solutions = []
@@ -49,14 +49,11 @@ def _print_names_and_sources(filenames):
     for solution in problem.incorrect_solutions:
       if solution.language == contest_problem_pb2.ContestProblem.Solution.Language.PYTHON3:
         incorrect_solutions.append(solution.solution)
-    for i in range(min(len(correct_solutions), len(incorrect_solutions))):
-      solution_pairs.append((correct_solutions[i], incorrect_solutions[i]))
-  random.shuffle(solution_pairs)
-  with open("solution_pairs.txt", "w") as f:
-    for (correct, incorrect) in solution_pairs:
-      f.write(f"{escape(correct)}\n{escape(incorrect)}\n")
-      print(f"{escape(correct)}\n{escape(incorrect)}")
-
+    problems.append({
+      'correct': correct_solutions,
+      'incorrect': incorrect_solutions
+    })
+  print(json.dumps(problems))
 
 
 if __name__ == '__main__':

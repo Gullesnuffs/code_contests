@@ -4,7 +4,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "com_github_grpc_grpc",
     remote = "https://github.com/grpc/grpc.git",
-    tag = "v1.38.1",
+    tag = "v1.46.4",
 )
 
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
@@ -14,7 +14,7 @@ grpc_deps()
 git_repository(
     name = "rules_python",
     remote = "https://github.com/bazelbuild/rules_python.git",
-    tag = "0.5.0",
+    tag = "0.10.0",
 )
 
 # proto_library rules implicitly depend on @com_google_protobuf//:protoc,
