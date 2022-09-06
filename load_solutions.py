@@ -19,6 +19,7 @@ Example usage:
 """
 
 import io
+import os
 import sys
 import random
 
@@ -38,23 +39,46 @@ def _all_problems(filenames):
 def escape(s: str):
     return s.replace('\\', '\\backslash').replace('\n', '\\n')
 
-def _print_names_and_sources(filenames):
-  problems = []
+def get_language(solution):
+  if solution.language == contest_problem_pb2.ContestProblem.Solution.Language.PYTHON3:
+    return "Python3"
+  if solution.language == contest_problem_pb2.ContestProblem.Solution.Language.CPP:
+    return "Cpp"
+  return None
+
+def _print_names_and_sources(output_directory: str, filenames):
+  output_filenames = set()
   for problem in _all_problems(filenames):
     correct_solutions = []
     incorrect_solutions = []
     for solution in problem.solutions:
-      if solution.language == contest_problem_pb2.ContestProblem.Solution.Language.PYTHON3:
-        correct_solutions.append(solution.solution)
+      language = get_language(solution)
+      if language is not None:
+        correct_solutions.append({'solution': solution.solution, 'language': language})
     for solution in problem.incorrect_solutions:
-      if solution.language == contest_problem_pb2.ContestProblem.Solution.Language.PYTHON3:
-        incorrect_solutions.append(solution.solution)
-    problems.append({
+      language = get_language(solution)
+      if language is not None:
+        incorrect_solutions.append({'solution': solution.solution, 'language': language})
+    problem_json = json.dumps({
       'correct': correct_solutions,
-      'incorrect': incorrect_solutions
+      'incorrect': incorrect_solutions,
+      'name': problem.name
     })
-  print(json.dumps(problems))
+    filename = ""
+    for c in problem.name:
+      if c == ' ' or c == '_' or c == '-':
+        filename += '_'
+      elif c.isalnum():
+        filename += c
+    while filename in output_filenames:
+      filename += " (2)"
+    output_filenames.add(filename)
+    with open(f"{output_directory}/{filename}.json", "w") as f:
+      f.write(problem_json)
 
 
 if __name__ == '__main__':
-  _print_names_and_sources(sys.argv[1:])
+  output_directory = sys.argv[1]
+  if not os.path.exists(output_directory):
+    os.makedirs(output_directory)
+  _print_names_and_sources(output_directory, sys.argv[2:])
