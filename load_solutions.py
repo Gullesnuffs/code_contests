@@ -25,6 +25,7 @@ import random
 
 import riegeli
 import json
+import gzip
 
 import contest_problem_pb2
 
@@ -47,10 +48,12 @@ def get_language(solution):
   return None
 
 def _print_names_and_sources(output_directory: str, filenames):
+  MAX_TEST_SIZE = 1000
   output_filenames = set()
   for problem in _all_problems(filenames):
     correct_solutions = []
     incorrect_solutions = []
+    tests = []
     for solution in problem.solutions:
       language = get_language(solution)
       if language is not None:
@@ -59,9 +62,14 @@ def _print_names_and_sources(output_directory: str, filenames):
       language = get_language(solution)
       if language is not None:
         incorrect_solutions.append({'solution': solution.solution, 'language': language})
+    for test_collection in [problem.public_tests, problem.private_tests, problem.generated_tests]:
+      for test in test_collection:
+        if len(test.input) < MAX_TEST_SIZE:
+          tests.append(test.input)
     problem_json = json.dumps({
       'correct': correct_solutions,
       'incorrect': incorrect_solutions,
+      'tests': tests,
       'name': problem.name
     })
     filename = ""
@@ -73,8 +81,8 @@ def _print_names_and_sources(output_directory: str, filenames):
     while filename in output_filenames:
       filename += " (2)"
     output_filenames.add(filename)
-    with open(f"{output_directory}/{filename}.json", "w") as f:
-      f.write(problem_json)
+    with gzip.open(f"{output_directory}/{filename}.gz", "wb", 7) as f:
+      f.write(problem_json.encode("UTF-8"))
 
 
 if __name__ == '__main__':
